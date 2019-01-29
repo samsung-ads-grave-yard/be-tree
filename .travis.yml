@@ -1,0 +1,10 @@
+language: C
+sudo: required
+dist: trusty
+cache: packages
+addons:
+  apt:
+    packages:
+      - libgsl0-dev
+      - valgrind
+script: make dev

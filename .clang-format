@@ -1,0 +1,21 @@
+BasedOnStyle: WebKit
+Standard: Cpp11
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+BinPackArguments: false
+BinPackParameters: false
+ColumnLimit: 100
+MaxEmptyLinesToKeep: 2
+NamespaceIndentation: None
+PointerBindsToType: true
+IndentCaseLabels: true
+SpaceBeforeParens: Never
+AlignEscapedNewlines: Left
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterControlStatement: false
+    AfterFunction: true
+    BeforeElse: true
