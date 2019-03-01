@@ -77,7 +77,7 @@ static bool match_sub(size_t attr_domains_count,
         if(short_circuit == SHORT_CIRCUIT_PASS) {
             return true;
         }
-        else if(short_circuit == SHORT_CIRCUIT_FAIL) {
+        if(short_circuit == SHORT_CIRCUIT_FAIL) {
             return false;
         }
     }
@@ -193,9 +193,7 @@ static bool is_event_enclosed(const struct betree_variable** preds, const struct
         case BETREE_SEGMENTS:
         case BETREE_FREQUENCY_CAPS:
             return true;
-        default:
-            switch_default_error("Invalid value type");
-            return false;
+        default: abort();
     }
     return false;
 }
@@ -234,9 +232,7 @@ bool sub_is_enclosed(const struct attr_domain** attr_domains, const struct betre
                     __func__);
                 abort();
             }
-            default: {
-                switch_default_error("Invalid bound value type");
-            }
+            default: abort();
         }
     }
     return false;
@@ -292,10 +288,7 @@ static bool is_used_cdir(betree_var_t variable_id, const struct cdir* cdir)
         case CNODE_PARENT_CDIR: {
             return is_used_cdir(variable_id, cdir->cdir_parent);
         }
-        default: {
-            switch_default_error("Invalid cdir parent type");
-            return false;
-        }
+        default: abort();
     }
 }
 
@@ -486,15 +479,13 @@ static struct cdir* insert_cdir(
     if(is_leaf(cdir)) {
         return cdir;
     }
-    else {
-        if(sub_is_enclosed((const struct attr_domain**)config->attr_domains, sub, cdir->lchild)) {
-            return insert_cdir(config, sub, cdir->lchild);
-        }
-        else if(sub_is_enclosed((const struct attr_domain**)config->attr_domains, sub, cdir->rchild)) {
-            return insert_cdir(config, sub, cdir->rchild);
-        }
-        return cdir;
+    if(sub_is_enclosed((const struct attr_domain**)config->attr_domains, sub, cdir->lchild)) {
+        return insert_cdir(config, sub, cdir->lchild);
     }
+    if(sub_is_enclosed((const struct attr_domain**)config->attr_domains, sub, cdir->rchild)) {
+        return insert_cdir(config, sub, cdir->rchild);
+    }
+    return cdir;
 }
 
 static bool is_overflowed(const struct lnode* lnode)
@@ -719,10 +710,7 @@ static bool is_attr_used_in_parent_cdir(betree_var_t variable_id, const struct c
         case(CNODE_PARENT_PNODE): {
             return is_attr_used_in_parent_pnode(variable_id, cdir->pnode_parent);
         }
-        default: {
-            switch_default_error("Invalid cdir parent type");
-            return false;
-        }
+        default: abort();
     }
 }
 
@@ -770,9 +758,7 @@ static bool splitable_attr_domain(
         case BETREE_SEGMENTS:
         case BETREE_FREQUENCY_CAPS:
             return false;
-        default:
-            switch_default_error("Invalid bound value type");
-            return false;
+        default: abort();
     }
 }
 
@@ -806,10 +792,8 @@ static bool get_next_highest_score_unused_attr(
     if(found == false) {
         return false;
     }
-    else {
-        *var = highest_var;
-        return true;
-    }
+    *var = highest_var;
+    return true;
 }
 
 static void update_cluster_capacity(const struct config* config, struct lnode* lnode)
@@ -817,7 +801,6 @@ static void update_cluster_capacity(const struct config* config, struct lnode* l
     if(lnode == NULL) {
         return;
     }
-    // TODO: Based on equation 9, surely wrong
     size_t count = lnode->sub_count;
     size_t max = smax(config->lnode_max_cap,
         ceil((double)count / (double)config->lnode_max_cap) * config->lnode_max_cap);
@@ -891,10 +874,7 @@ static bool is_atomic(const struct cdir* cdir)
             fprintf(stderr, "%s a frequency value cdir should never happen for now\n", __func__);
             abort();
         }
-        default: {
-            switch_default_error("Invalid bound value type");
-            return false;
-        }
+        default: abort();
     }
 }
 
@@ -1033,9 +1013,7 @@ static struct value_bounds split_value_bound(struct value_bound bound)
             fprintf(stderr, "%s a frequency value cdir should never happen for now\n", __func__);
             abort();
         }
-        default: {
-            switch_default_error("Invalid bound value type");
-        }
+        default: abort();
     }
     struct value_bounds bounds = { .lbound = lbound, .rbound = rbound };
     return bounds;
@@ -1075,40 +1053,40 @@ static void space_clustering(const struct config* config, struct cdir* cdir)
     update_cluster_capacity(config, lnode);
 }
 
-static bool search_delete_cdir(size_t attr_domains_count,
-    const struct attr_domain** attr_domains, struct betree_sub* sub, struct cdir* cdir);
+/*static bool search_delete_cdir(size_t attr_domains_count,*/
+    /*const struct attr_domain** attr_domains, struct betree_sub* sub, struct cdir* cdir);*/
 
-static bool delete_sub_from_leaf(betree_sub_t sub, struct lnode* lnode)
-{
-    return remove_sub(sub, lnode);
-}
+/*static bool delete_sub_from_leaf(betree_sub_t sub, struct lnode* lnode)*/
+/*{*/
+    /*return remove_sub(sub, lnode);*/
+/*}*/
 
-static bool is_lnode_empty(const struct lnode* lnode)
-{
-    return lnode == NULL || lnode->sub_count == 0;
-}
+/*static bool is_lnode_empty(const struct lnode* lnode)*/
+/*{*/
+    /*return lnode == NULL || lnode->sub_count == 0;*/
+/*}*/
 
-static bool is_pdir_empty(const struct pdir* pdir)
-{
-    return pdir == NULL || pdir->pnode_count == 0;
-}
+/*static bool is_pdir_empty(const struct pdir* pdir)*/
+/*{*/
+    /*return pdir == NULL || pdir->pnode_count == 0;*/
+/*}*/
 
-static bool is_cnode_empty(const struct cnode* cnode)
-{
-    return cnode == NULL || (is_lnode_empty(cnode->lnode) && is_pdir_empty(cnode->pdir));
-}
+/*static bool is_cnode_empty(const struct cnode* cnode)*/
+/*{*/
+    /*return cnode == NULL || (is_lnode_empty(cnode->lnode) && is_pdir_empty(cnode->pdir));*/
+/*}*/
 
-static bool is_cdir_empty(const struct cdir* cdir)
-{
-    return cdir == NULL
-        || (is_cnode_empty(cdir->cnode) && is_cdir_empty(cdir->lchild)
-               && is_cdir_empty(cdir->rchild));
-}
+/*static bool is_cdir_empty(const struct cdir* cdir)*/
+/*{*/
+    /*return cdir == NULL*/
+        /*|| (is_cnode_empty(cdir->cnode) && is_cdir_empty(cdir->lchild)*/
+               /*&& is_cdir_empty(cdir->rchild));*/
+/*}*/
 
-static bool is_pnode_empty(const struct pnode* pnode)
-{
-    return pnode == NULL || (is_cdir_empty(pnode->cdir));
-}
+/*static bool is_pnode_empty(const struct pnode* pnode)*/
+/*{*/
+    /*return pnode == NULL || (is_cdir_empty(pnode->cdir));*/
+/*}*/
 
 static void free_pnode(struct pnode* pnode);
 
@@ -1206,31 +1184,31 @@ static void free_cdir(struct cdir* cdir)
     bfree(cdir);
 }
 
-static void try_remove_pnode_from_parent(const struct pnode* pnode)
-{
-    struct pdir* pdir = pnode->parent;
-    for(size_t i = 0; i < pdir->pnode_count; i++) {
-        if(pnode == pdir->pnodes[i]) {
-            for(size_t j = i; j < pdir->pnode_count - 1; j++) {
-                pdir->pnodes[j] = pdir->pnodes[j + 1];
-            }
-            pdir->pnode_count--;
-            if(pdir->pnode_count == 0) {
-                bfree(pdir->pnodes);
-                pdir->pnodes = NULL;
-            }
-            else {
-                struct pnode** pnodes = brealloc(pdir->pnodes, sizeof(*pnodes) * pdir->pnode_count);
-                if(pnodes == NULL) {
-                    fprintf(stderr, "%s brealloc failed\n", __func__);
-                    abort();
-                }
-                pdir->pnodes = pnodes;
-            }
-            return;
-        }
-    }
-}
+/*static void try_remove_pnode_from_parent(const struct pnode* pnode)*/
+/*{*/
+    /*struct pdir* pdir = pnode->parent;*/
+    /*for(size_t i = 0; i < pdir->pnode_count; i++) {*/
+        /*if(pnode == pdir->pnodes[i]) {*/
+            /*for(size_t j = i; j < pdir->pnode_count - 1; j++) {*/
+                /*pdir->pnodes[j] = pdir->pnodes[j + 1];*/
+            /*}*/
+            /*pdir->pnode_count--;*/
+            /*if(pdir->pnode_count == 0) {*/
+                /*bfree(pdir->pnodes);*/
+                /*pdir->pnodes = NULL;*/
+            /*}*/
+            /*else {*/
+                /*struct pnode** pnodes = brealloc(pdir->pnodes, sizeof(*pnodes) * pdir->pnode_count);*/
+                /*if(pnodes == NULL) {*/
+                    /*fprintf(stderr, "%s brealloc failed\n", __func__);*/
+                    /*abort();*/
+                /*}*/
+                /*pdir->pnodes = pnodes;*/
+            /*}*/
+            /*return;*/
+        /*}*/
+    /*}*/
+/*}*/
 
 static void free_pnode(struct pnode* pnode)
 {
@@ -1243,48 +1221,48 @@ static void free_pnode(struct pnode* pnode)
     bfree(pnode);
 }
 
-bool betree_delete_inner(size_t attr_domains_count,
-    const struct attr_domain** attr_domains, struct betree_sub* sub, struct cnode* cnode)
-{
-    struct pnode* pnode = NULL;
-    bool isFound = delete_sub_from_leaf(sub->id, cnode->lnode);
-    if(!isFound) {
-        for(size_t i = 0; i < attr_domains_count; i++) {
-            if(test_bit(sub->attr_vars, i) == false) {
-                continue;
-            }
-            betree_var_t variable_id = i;
-            pnode = search_pdir(variable_id, cnode->pdir);
-            if(pnode != NULL) {
-                isFound = search_delete_cdir(attr_domains_count, attr_domains, sub, pnode->cdir);
-            }
-            if(isFound) {
-                break;
-            }
-        }
-    }
-    if(isFound) {
-        if(pnode != NULL && is_pnode_empty(pnode)) {
-            try_remove_pnode_from_parent(pnode);
-            free_pnode(pnode);
-        }
-        if(cnode != NULL && is_pdir_empty(cnode->pdir)) {
-            free_pdir(cnode->pdir);
-            cnode->pdir = NULL;
-        }
-        if(!is_root(cnode)) {
-            if(cnode != NULL && is_lnode_empty(cnode->lnode)) {
-                free_lnode(cnode->lnode);
-                cnode->lnode = NULL;
-            }
-            if(is_cnode_empty(cnode)) {
-                cnode->parent->cnode = NULL;
-                free_cnode(cnode);
-            }
-        }
-    }
-    return isFound;
-}
+/*bool betree_delete_inner(size_t attr_domains_count,*/
+    /*const struct attr_domain** attr_domains, struct betree_sub* sub, struct cnode* cnode)*/
+/*{*/
+    /*struct pnode* pnode = NULL;*/
+    /*bool isFound = delete_sub_from_leaf(sub->id, cnode->lnode);*/
+    /*if(!isFound) {*/
+        /*for(size_t i = 0; i < attr_domains_count; i++) {*/
+            /*if(test_bit(sub->attr_vars, i) == false) {*/
+                /*continue;*/
+            /*}*/
+            /*betree_var_t variable_id = i;*/
+            /*pnode = search_pdir(variable_id, cnode->pdir);*/
+            /*if(pnode != NULL) {*/
+                /*isFound = search_delete_cdir(attr_domains_count, attr_domains, sub, pnode->cdir);*/
+            /*}*/
+            /*if(isFound) {*/
+                /*break;*/
+            /*}*/
+        /*}*/
+    /*}*/
+    /*if(isFound) {*/
+        /*if(pnode != NULL && is_pnode_empty(pnode)) {*/
+            /*try_remove_pnode_from_parent(pnode);*/
+            /*free_pnode(pnode);*/
+        /*}*/
+        /*if(cnode != NULL && is_pdir_empty(cnode->pdir)) {*/
+            /*free_pdir(cnode->pdir);*/
+            /*cnode->pdir = NULL;*/
+        /*}*/
+        /*if(!is_root(cnode)) {*/
+            /*if(cnode != NULL && is_lnode_empty(cnode->lnode)) {*/
+                /*free_lnode(cnode->lnode);*/
+                /*cnode->lnode = NULL;*/
+            /*}*/
+            /*if(is_cnode_empty(cnode)) {*/
+                /*cnode->parent->cnode = NULL;*/
+                /*free_cnode(cnode);*/
+            /*}*/
+        /*}*/
+    /*}*/
+    /*return isFound;*/
+/*}*/
 
 static struct betree_sub* find_sub_id_cdir(betree_sub_t id, struct cdir* cdir)
 {
@@ -1327,67 +1305,67 @@ struct betree_sub* find_sub_id(betree_sub_t id, struct cnode* cnode)
     return NULL;
 }
 
-static bool is_empty(struct cdir* cdir)
-{
-    return is_cdir_empty(cdir);
-}
+/*static bool is_empty(struct cdir* cdir)*/
+/*{*/
+    /*return is_cdir_empty(cdir);*/
+/*}*/
 
-static void remove_bucket(struct cdir* cdir)
-{
-    free_cdir(cdir);
-}
+/*static void remove_bucket(struct cdir* cdir)*/
+/*{*/
+    /*free_cdir(cdir);*/
+/*}*/
 
-static void try_remove_cdir_from_parent(struct cdir* cdir)
-{
-    switch(cdir->parent_type) {
-        case CNODE_PARENT_CDIR: {
-            if(cdir->cdir_parent->lchild == cdir) {
-                cdir->cdir_parent->lchild = NULL;
-            }
-            else if(cdir->cdir_parent->rchild == cdir) {
-                cdir->cdir_parent->rchild = NULL;
-            }
-            break;
-        }
-        case CNODE_PARENT_PNODE: {
-            cdir->pnode_parent->cdir = NULL;
-            break;
-        }
-        default: {
-            switch_default_error("Invalid cdir parent type");
-        }
-    }
-}
+/*static void try_remove_cdir_from_parent(struct cdir* cdir)*/
+/*{*/
+    /*switch(cdir->parent_type) {*/
+        /*case CNODE_PARENT_CDIR: {*/
+            /*if(cdir->cdir_parent->lchild == cdir) {*/
+                /*cdir->cdir_parent->lchild = NULL;*/
+            /*}*/
+            /*else if(cdir->cdir_parent->rchild == cdir) {*/
+                /*cdir->cdir_parent->rchild = NULL;*/
+            /*}*/
+            /*break;*/
+        /*}*/
+        /*case CNODE_PARENT_PNODE: {*/
+            /*cdir->pnode_parent->cdir = NULL;*/
+            /*break;*/
+        /*}*/
+        /*default: {*/
+            /*switch_default_error("Invalid cdir parent type");*/
+        /*}*/
+    /*}*/
+/*}*/
 
-static bool search_delete_cdir(size_t attr_domains_count,
-    const struct attr_domain** attr_domains, struct betree_sub* sub, struct cdir* cdir)
-{
-    bool isFound = false;
-    if(sub_is_enclosed(attr_domains, sub, cdir->lchild)) {
-        isFound = search_delete_cdir(attr_domains_count, attr_domains, sub, cdir->lchild);
-    }
-    else if(sub_is_enclosed(attr_domains, sub, cdir->rchild)) {
-        isFound = search_delete_cdir(attr_domains_count, attr_domains, sub, cdir->rchild);
-    }
-    else {
-        isFound = betree_delete_inner(attr_domains_count, attr_domains, sub, cdir->cnode);
-    }
-    if(isFound) {
-        if(is_empty(cdir->lchild)) {
-            remove_bucket(cdir->lchild);
-            cdir->lchild = NULL;
-        }
-        if(is_empty(cdir->rchild)) {
-            remove_bucket(cdir->rchild);
-            cdir->rchild = NULL;
-        }
-        if(is_empty(cdir)) {
-            try_remove_cdir_from_parent(cdir);
-            free_cdir(cdir);
-        }
-    }
-    return isFound;
-}
+/*static bool search_delete_cdir(size_t attr_domains_count,*/
+    /*const struct attr_domain** attr_domains, struct betree_sub* sub, struct cdir* cdir)*/
+/*{*/
+    /*bool isFound = false;*/
+    /*if(sub_is_enclosed(attr_domains, sub, cdir->lchild)) {*/
+        /*isFound = search_delete_cdir(attr_domains_count, attr_domains, sub, cdir->lchild);*/
+    /*}*/
+    /*else if(sub_is_enclosed(attr_domains, sub, cdir->rchild)) {*/
+        /*isFound = search_delete_cdir(attr_domains_count, attr_domains, sub, cdir->rchild);*/
+    /*}*/
+    /*else {*/
+        /*isFound = betree_delete_inner(attr_domains_count, attr_domains, sub, cdir->cnode);*/
+    /*}*/
+    /*if(isFound) {*/
+        /*if(is_empty(cdir->lchild)) {*/
+            /*remove_bucket(cdir->lchild);*/
+            /*cdir->lchild = NULL;*/
+        /*}*/
+        /*if(is_empty(cdir->rchild)) {*/
+            /*remove_bucket(cdir->rchild);*/
+            /*cdir->rchild = NULL;*/
+        /*}*/
+        /*if(is_empty(cdir)) {*/
+            /*try_remove_cdir_from_parent(cdir);*/
+            /*free_cdir(cdir);*/
+        /*}*/
+    /*}*/
+    /*return isFound;*/
+/*}*/
 
 struct betree_variable* make_pred(const char* attr, betree_var_t variable_id, struct value value)
 {
@@ -1428,9 +1406,7 @@ void fill_pred(struct betree_sub* sub, const struct ast_node* expr)
                 case AST_SPECIAL_SEGMENT:
                     fill_pred_attr_var(sub, expr->special_expr.segment.attr_var);
                     return;
-                default:
-                    switch_default_error("Invalid special expr type");
-                    return;
+                default: abort();
             }
             return;
         }
@@ -1449,9 +1425,7 @@ void fill_pred(struct betree_sub* sub, const struct ast_node* expr)
                     return;
                 case AST_BOOL_LITERAL:
                     return;
-                default:
-                    switch_default_error("Invalid bool op");
-                    return;
+                default: abort();
             }
             return;
         }
@@ -1479,9 +1453,7 @@ void fill_pred(struct betree_sub* sub, const struct ast_node* expr)
             fill_pred_attr_var(sub, expr->list_expr.attr_var);
             return;
         }
-        default: {
-            switch_default_error("Invalid expr type");
-        }
+        default: abort();
     }
 }
 
@@ -1492,13 +1464,9 @@ static enum short_circuit_e short_circuit_for_attr_var(
         if(inverted) {
             return SHORT_CIRCUIT_PASS;
         }
-        else {
-            return SHORT_CIRCUIT_FAIL;
-        }
+        return SHORT_CIRCUIT_FAIL;
     }
-    else {
-        return SHORT_CIRCUIT_NONE;
-    }
+    return SHORT_CIRCUIT_NONE;
 }
 
 static enum short_circuit_e short_circuit_for_node(
@@ -1741,9 +1709,7 @@ void event_to_string(const struct betree_event* event, char* buffer)
                 bfree((char*)string_list);
                 break;
             }
-            default: {
-                switch_default_error("Invalid value value type");
-            }
+            default: abort();
         }
     }
     buffer[length] = '\0';
@@ -1981,9 +1947,7 @@ void fill_event(const struct config* config, struct betree_event* event)
                 }
                 break;
             }
-            default:
-                switch_default_error("Invalid value type");
-                break;
+            default: abort();
         }
     }
 }

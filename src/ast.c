@@ -270,8 +270,7 @@ static void free_special_expr(struct ast_special_expr special_expr)
             free_attr_var(special_expr.string.attr_var);
             bfree((char*)special_expr.string.pattern);
             break;
-        default:
-            switch_default_error("Invalid special expr type");
+        default: abort();
     }
 }
 
@@ -289,9 +288,7 @@ static void free_set_expr(struct ast_set_expr set_expr)
             free_attr_var(set_expr.left_value.variable_value);
             break;
         }
-        default: {
-            switch_default_error("Invalid set left value type");
-        }
+        default: abort();
     }
     switch(set_expr.right_value.value_type) {
         case AST_SET_RIGHT_VALUE_INTEGER_LIST: {
@@ -309,9 +306,7 @@ static void free_set_expr(struct ast_set_expr set_expr)
         case AST_SET_RIGHT_VALUE_INTEGER_LIST_ENUM:
             free_integer_enum_list(set_expr.right_value.integer_enum_list_value);
             break;
-        default: {
-            switch_default_error("Invalid set right value type");
-        }
+        default: abort();
     }
 }
 
@@ -326,9 +321,7 @@ static void free_list_expr(struct ast_list_expr list_expr)
             free_string_list(list_expr.value.string_list_value);
             break;
         }
-        default: {
-            switch_default_error("Invalid list value type");
-        }
+        default: abort();
     }
     free_attr_var(list_expr.attr_var);
 }
@@ -369,9 +362,7 @@ void free_ast_node(struct ast_node* node)
                     break;
                 case AST_BOOL_LITERAL:
                     break;
-                default:
-                    switch_default_error("Invalid bool expr operation");
-                    break;
+                default: abort();
             }
             break;
         case AST_TYPE_SET_EXPR:
@@ -380,9 +371,7 @@ void free_ast_node(struct ast_node* node)
         case AST_TYPE_LIST_EXPR:
             free_list_expr(node->list_expr);
             break;
-        default: {
-            switch_default_error("Invalid expr type");
-        }
+        default: abort();
     }
     bfree(node);
 }
@@ -393,7 +382,7 @@ static void invalid_expr(const char* msg)
     abort();
 }
 
-bool d64binary_search(int64_t arr[], size_t count, int64_t to_find)
+static bool d64binary_search(const int64_t arr[], size_t count, int64_t to_find)
 {
     int imin = 0;
     int imax = (int)count - 1;
@@ -402,7 +391,7 @@ bool d64binary_search(int64_t arr[], size_t count, int64_t to_find)
         if(arr[imid] == to_find) {
             return true;
         }
-        else if(arr[imid] < to_find) {
+        if(arr[imid] < to_find) {
             imin = imid + 1;
         }
         else {
@@ -412,7 +401,7 @@ bool d64binary_search(int64_t arr[], size_t count, int64_t to_find)
     return false;
 }
 
-bool sbinary_search(struct string_value arr[], size_t count, betree_str_t to_find)
+static bool sbinary_search(struct string_value arr[], size_t count, betree_str_t to_find)
 {
     int imin = 0;
     int imax = (int)count - 1;
@@ -421,7 +410,7 @@ bool sbinary_search(struct string_value arr[], size_t count, betree_str_t to_fin
         if(arr[imid].str == to_find) {
             return true;
         }
-        else if(arr[imid].str < to_find) {
+        if(arr[imid].str < to_find) {
             imin = imid + 1;
         }
         else {
@@ -431,7 +420,7 @@ bool sbinary_search(struct string_value arr[], size_t count, betree_str_t to_fin
     return false;
 }
 
-bool iebinary_search(struct integer_enum_value arr[], size_t count, betree_ienum_t to_find)
+static bool iebinary_search(struct integer_enum_value arr[], size_t count, betree_ienum_t to_find)
 {
     int imin = 0;
     int imax = (int)count - 1;
@@ -440,7 +429,7 @@ bool iebinary_search(struct integer_enum_value arr[], size_t count, betree_ienum
         if(arr[imid].ienum == to_find) {
             return true;
         }
-        else if(arr[imid].ienum < to_find) {
+        if(arr[imid].ienum < to_find) {
             imin = imid + 1;
         }
         else {
@@ -521,10 +510,7 @@ const char* frequency_type_to_string(enum frequency_type_e type)
             string = "product:ip";
             break;
         }
-        default: {
-            switch_default_error("Invalid frequency type");
-            abort();
-        }
+        default: abort();
     }
     return string;
 }
@@ -554,9 +540,7 @@ static bool match_special_expr(
                     return within_frequency_caps(
                         caps, f->type, f->id, f->ns, f->value, f->length, now);
                 }
-                default:
-                    switch_default_error("Invalid frequency operation");
-                    return false;
+                default: abort();
             }
         }
         case AST_SPECIAL_SEGMENT: {
@@ -576,9 +560,7 @@ static bool match_special_expr(
                     return segment_within(s->segment_id, s->seconds, segments, now);
                 case AST_SPECIAL_SEGMENTBEFORE:
                     return segment_before(s->segment_id, s->seconds, segments, now);
-                default:
-                    switch_default_error("Invalid segment operation");
-                    return false;
+                default: abort();
             }
         }
         case AST_SPECIAL_GEO: {
@@ -597,9 +579,7 @@ static bool match_special_expr(
                     return geo_within_radius(
                         g->latitude, g->longitude, latitude_var, longitude_var, g->radius);
                 }
-                default:
-                    switch_default_error("Invalid geo operation");
-                    return false;
+                default: abort();
             }
             return false;
         }
@@ -617,15 +597,11 @@ static bool match_special_expr(
                     return starts_with(value.string, s->pattern);
                 case AST_SPECIAL_ENDSWITH:
                     return ends_with(value.string, s->pattern);
-                default:
-                    switch_default_error("Invalid string operation");
-                    return false;
+                default: abort();
             }
             return false;
         }
-        default:
-            switch_default_error("Invalid special expr type");
-            return false;
+        default: abort();
     }
 }
 
@@ -654,7 +630,7 @@ static bool match_not_all_of_int(struct value variable, struct ast_list_expr lis
         if(x == y) {
             return true;
         }
-        else if(y < x) {
+        if(y < x) {
             j++;
         }
         else {
@@ -689,7 +665,7 @@ static bool match_not_all_of_string(struct value variable, struct ast_list_expr 
         if(x->str == y->str) {
             return true;
         }
-        else if(y->str < x->str) {
+        if(y->str < x->str) {
             j++;
         }
         else {
@@ -724,13 +700,9 @@ static bool match_all_of_int(struct value variable, struct ast_list_expr list_ex
         if(j < x_count) {
             return false;
         }
-        else {
-            return true;
-        }
+        return true;
     }
-    else {
-        return false;
-    }
+    return false;
 }
 
 static bool match_all_of_string(struct value variable, struct ast_list_expr list_expr)
@@ -758,13 +730,9 @@ static bool match_all_of_string(struct value variable, struct ast_list_expr list
         if(j < x_count) {
             return false;
         }
-        else {
-            return true;
-        }
+        return true;
     }
-    else {
-        return false;
-    }
+    return false;
 }
 
 static bool match_list_expr(
@@ -787,9 +755,7 @@ static bool match_list_expr(
                     result = match_not_all_of_string(variable, list_expr);
                     break;
                 }
-                default: {
-                    switch_default_error("Invalid list value type");
-                }
+                default: abort();
             }
             switch(list_expr.op) {
                 case AST_LIST_ONE_OF:
@@ -799,10 +765,7 @@ static bool match_list_expr(
                 case AST_LIST_ALL_OF:
                     invalid_expr("Should never happen");
                     return false;
-                default: {
-                    switch_default_error("Invalid list operation");
-                    return false;
-                }
+                default: abort();
             }
         }
         case AST_LIST_ALL_OF: {
@@ -811,16 +774,10 @@ static bool match_list_expr(
                     return match_all_of_int(variable, list_expr);
                 case AST_LIST_VALUE_STRING_LIST:
                     return match_all_of_string(variable, list_expr);
-                default: {
-                    switch_default_error("Invalid list value type");
-                    return false;
-                }
+                default: abort();
             }
         }
-        default: {
-            switch_default_error("Invalid list operation");
-            return false;
-        }
+        default: abort();
     }
 }
 
@@ -885,10 +842,7 @@ static bool match_set_expr(const struct betree_variable** preds, const struct as
         case AST_SET_IN: {
             return is_in;
         }
-        default: {
-            switch_default_error("Invalid set operation");
-            return false;
-        }
+        default: abort();
     }
 }
 
@@ -911,10 +865,7 @@ static bool match_compare_expr(
                     bool result = variable.float_value < compare_expr.value.float_value;
                     return result;
                 }
-                default: {
-                    switch_default_error("Invalid compare value type");
-                    return false;
-                }
+                default: abort();
             }
         }
         case AST_COMPARE_LE: {
@@ -927,10 +878,7 @@ static bool match_compare_expr(
                     bool result = variable.float_value <= compare_expr.value.float_value;
                     return result;
                 }
-                default: {
-                    switch_default_error("Invalid compare value type");
-                    return false;
-                }
+                default: abort();
             }
         }
         case AST_COMPARE_GT: {
@@ -943,10 +891,7 @@ static bool match_compare_expr(
                     bool result = variable.float_value > compare_expr.value.float_value;
                     return result;
                 }
-                default: {
-                    switch_default_error("Invalid compare value type");
-                    return false;
-                }
+                default: abort();
             }
         }
         case AST_COMPARE_GE: {
@@ -959,16 +904,10 @@ static bool match_compare_expr(
                     bool result = variable.float_value >= compare_expr.value.float_value;
                     return result;
                 }
-                default: {
-                    switch_default_error("Invalid compare value type");
-                    return false;
-                }
+                default: abort();
             }
         }
-        default: {
-            switch_default_error("Invalid compare operation");
-            return false;
-        }
+        default: abort();
     }
 }
 
@@ -999,10 +938,7 @@ static bool match_equality_expr(
                     bool result = variable.integer_enum_value.ienum == equality_expr.value.integer_enum_value.ienum;
                     return result;
                 }
-                default: {
-                    switch_default_error("Invalid equality value type");
-                    return false;
-                }
+                default: abort();
             }
         }
         case AST_EQUALITY_NE: {
@@ -1023,16 +959,10 @@ static bool match_equality_expr(
                     bool result = variable.integer_enum_value.ienum != equality_expr.value.integer_enum_value.ienum;
                     return result;
                 }
-                default: {
-                    switch_default_error("Invalid equality value type");
-                    return false;
-                }
+                default: abort();
             }
         }
-        default: {
-            switch_default_error("Invalid equality operation");
-            return false;
-        }
+        default: abort();
     }
 }
 
@@ -1077,10 +1007,7 @@ static bool match_bool_expr(const struct betree_variable** preds,
             }
             return value;
         }
-        default: {
-            switch_default_error("Invalid bool operation");
-            return false;
-        }
+        default: abort();
     }
 }
 
@@ -1096,9 +1023,7 @@ static bool match_is_null_expr(const struct betree_variable** preds,
             return is_variable_defined;
         case AST_IS_EMPTY:
             return is_variable_defined && is_empty_list(variable);
-        default:
-            switch_default_error("Invalid is null operation");
-            return false;
+        default: abort();
     }
 }
 
@@ -1150,10 +1075,7 @@ static bool match_node_inner(const struct betree_variable** preds,
             result = match_equality_expr(preds, node->equality_expr);
             break;
         }
-        default: {
-            switch_default_error("Invalid expr type");
-            return false;
-        }
+        default: abort();
     }
     if(node->memoize_id != INVALID_PRED) {
         if(result) {
@@ -1227,7 +1149,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                         }
                         return;
                     }
-                    else if(domain->bound.value_type == BETREE_STRING_LIST
+                    if(domain->bound.value_type == BETREE_STRING_LIST
                         && node->list_expr.value.value_type == AST_LIST_VALUE_STRING_LIST) {
                         if(is_reversed) {
                         }
@@ -1249,10 +1171,8 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                         }
                         return;
                     }
-                    else {
-                        invalid_expr("Domain and expr type mismatch");
-                        return;
-                    }
+                    invalid_expr("Domain and expr type mismatch");
+                    return;
                 case AST_LIST_NONE_OF:
                     if(domain->bound.value_type == BETREE_INTEGER_LIST
                         && node->list_expr.value.value_type == AST_LIST_VALUE_INTEGER_LIST) {
@@ -1300,9 +1220,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                         invalid_expr("Domain and expr type mismatch");
                         return;
                     }
-                default:
-                    switch_default_error("Invalid set operation");
-                    return;
+                default: abort();
             }
         case AST_TYPE_SET_EXPR:
             switch(node->set_expr.op) {
@@ -1333,7 +1251,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             }
                             return;
                         }
-                        else if(domain->bound.value_type == BETREE_STRING
+                        if(domain->bound.value_type == BETREE_STRING
                             && node->set_expr.right_value.value_type
                                 == AST_SET_RIGHT_VALUE_STRING_LIST) {
                             if(is_reversed) {
@@ -1357,10 +1275,8 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             }
                             return;
                         }
-                        else {
-                            invalid_expr("Domain and expr type mismatch");
-                            return;
-                        }
+                        invalid_expr("Domain and expr type mismatch");
+                        return;
                     }
                     else if(node->set_expr.right_value.value_type == AST_SET_RIGHT_VALUE_VARIABLE) {
                         if(domain->attr_var.var != node->set_expr.right_value.variable_value.var) {
@@ -1379,7 +1295,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             }
                             return;
                         }
-                        else if(domain->bound.value_type == BETREE_STRING_LIST
+                        if(domain->bound.value_type == BETREE_STRING_LIST
                             && node->set_expr.left_value.value_type
                                 == AST_SET_LEFT_VALUE_STRING) {
                             if(is_reversed) {
@@ -1392,15 +1308,11 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             }
                             return;
                         }
-                        else {
-                            invalid_expr("Domain and expr type mismatch");
-                            return;
-                        }
-                    }
-                    else {
                         invalid_expr("Domain and expr type mismatch");
                         return;
                     }
+                    invalid_expr("Domain and expr type mismatch");
+                    return;
                 case AST_SET_NOT_IN:
                     if(node->set_expr.left_value.value_type == AST_SET_LEFT_VALUE_VARIABLE) {
                         if(domain->attr_var.var != node->set_expr.left_value.variable_value.var) {
@@ -1428,7 +1340,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             }
                             return;
                         }
-                        else if(domain->bound.value_type == BETREE_STRING
+                        if(domain->bound.value_type == BETREE_STRING
                             && node->set_expr.right_value.value_type
                                 == AST_SET_RIGHT_VALUE_STRING_LIST) {
                             if(is_reversed) {
@@ -1452,12 +1364,10 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             }
                             return;
                         }
-                        else {
-                            invalid_expr("Domain and expr type mismatch");
-                            return;
-                        }
+                        invalid_expr("Domain and expr type mismatch");
+                        return;
                     }
-                    else if(node->set_expr.right_value.value_type == AST_SET_RIGHT_VALUE_VARIABLE) {
+                    if(node->set_expr.right_value.value_type == AST_SET_RIGHT_VALUE_VARIABLE) {
                         if(domain->attr_var.var != node->set_expr.right_value.variable_value.var) {
                             return;
                         }
@@ -1474,7 +1384,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             }
                             return;
                         }
-                        else if(domain->bound.value_type == BETREE_STRING_LIST
+                        if(domain->bound.value_type == BETREE_STRING_LIST
                             && node->set_expr.left_value.value_type
                                 == AST_SET_LEFT_VALUE_STRING) {
                             if(is_reversed) {
@@ -1487,18 +1397,12 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             }
                             return;
                         }
-                        else {
-                            invalid_expr("Domain and expr type mismatch");
-                            return;
-                        }
-                    }
-                    else {
                         invalid_expr("Domain and expr type mismatch");
                         return;
                     }
-                default:
-                    switch_default_error("Invalid set operation");
+                    invalid_expr("Domain and expr type mismatch");
                     return;
+                default: abort();
             }
         case AST_TYPE_BOOL_EXPR:
             switch(node->bool_expr.op) {
@@ -1715,9 +1619,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                     }
                     return;
                 }
-                default:
-                    switch_default_error("Invalid bool operation");
-                    return;
+                default: abort();
             }
         case AST_TYPE_EQUALITY_EXPR:
             if(domain->attr_var.var != node->equality_expr.attr_var.var) {
@@ -1771,9 +1673,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                                 dirty->max_dirty = true;
                             }
                             break;
-                        default:
-                            switch_default_error("Invalid equality value type");
-                            break;
+                        default: abort();
                     }
                     break;
                 case AST_EQUALITY_NE:
@@ -1818,14 +1718,10 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                             else {
                             }
                             break;
-                        default:
-                            switch_default_error("Invalid equality value type");
-                            break;
+                        default: abort();
                     }
                     break;
-                default:
-                    switch_default_error("Invalid equality operation");
-                    break;
+                default: abort();
             }
             return;
         case AST_TYPE_COMPARE_EXPR:
@@ -1861,9 +1757,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                                 dirty->max_dirty = true;
                             }
                             break;
-                        default:
-                            switch_default_error("Invalid compare value type");
-                            break;
+                        default: abort();
                     }
                     break;
                 case AST_COMPARE_LE:
@@ -1889,9 +1783,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                                 dirty->max_dirty = true;
                             }
                             break;
-                        default:
-                            switch_default_error("Invalid compare value type");
-                            break;
+                        default: abort();
                     }
                     break;
                 case AST_COMPARE_GT:
@@ -1917,9 +1809,7 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                                 dirty->min_dirty = true;
                             }
                             break;
-                        default:
-                            switch_default_error("Invalid compare value type");
-                            break;
+                        default: abort();
                     }
                     break;
                 case AST_COMPARE_GE:
@@ -1945,20 +1835,13 @@ static void get_variable_bound_inner(const struct attr_domain* domain,
                                 dirty->min_dirty = true;
                             }
                             break;
-                        default:
-                            switch_default_error("Invalid compare value type");
-                            break;
+                        default: abort();
                     }
                     break;
-                default:
-                    switch_default_error("Invalid compare operation");
-                    break;
-                    ;
+                default: abort();
             }
             return;
-        default:
-            switch_default_error("Invalid expr type");
-            return;
+        default: abort();
     }
 }
 
@@ -2151,10 +2034,7 @@ void assign_variable_id(struct config* config, struct ast_node* node)
                     node->special_expr.string.attr_var.var = variable_id;
                     return;
                 }
-                default: {
-                    switch_default_error("Invalid special expr type");
-                    return;
-                }
+                default: abort();
             }
             return;
         }
@@ -2190,9 +2070,7 @@ void assign_variable_id(struct config* config, struct ast_node* node)
                     node->bool_expr.variable.var = variable_id;
                     return;
                 }
-                default:
-                    switch_default_error("Invalid bool expr operation");
-                    return;
+                default: abort();
             }
         }
         case(AST_TYPE_LIST_EXPR): {
@@ -2214,9 +2092,7 @@ void assign_variable_id(struct config* config, struct ast_node* node)
                     node->set_expr.left_value.variable_value.var = variable_id;
                     break;
                 }
-                default: {
-                    switch_default_error("Invalid set left value type");
-                }
+                default: abort();
             }
             switch(node->set_expr.right_value.value_type) {
                 case AST_SET_RIGHT_VALUE_INTEGER_LIST: {
@@ -2233,15 +2109,11 @@ void assign_variable_id(struct config* config, struct ast_node* node)
                 }
                 case AST_SET_RIGHT_VALUE_INTEGER_LIST_ENUM:
                     break;
-                default: {
-                    switch_default_error("Invalid set right value type");
-                }
+                default: abort();
             }
             return;
         }
-        default: {
-            switch_default_error("Invalid expr type");
-        }
+        default: abort();
     }
 }
 
@@ -2282,9 +2154,7 @@ void assign_ienum_id(struct config* config, struct ast_node* node, bool always_a
                 case AST_BOOL_VARIABLE: {
                     return;
                 }
-                default:
-                    switch_default_error("Invalid bool expr operation");
-                    return;
+                default: abort();
             }
         case AST_TYPE_SET_EXPR:
             if(node->set_expr.left_value.value_type == AST_SET_LEFT_VALUE_VARIABLE
@@ -2304,9 +2174,7 @@ void assign_ienum_id(struct config* config, struct ast_node* node, bool always_a
 
             }
             return;
-        default: {
-            switch_default_error("Invalid expr type");
-        }
+        default: abort();
     }
 }
 
@@ -2334,9 +2202,7 @@ void assign_str_id(struct config* config, struct ast_node* node, bool always_ass
                 case AST_SPECIAL_STRING: {
                     return;
                 }
-                default:
-                    switch_default_error("Invalid special expr type");
-                    return;
+                default: abort();
             }
             return;
         }
@@ -2370,9 +2236,7 @@ void assign_str_id(struct config* config, struct ast_node* node, bool always_ass
                 case AST_BOOL_VARIABLE: {
                     return;
                 }
-                default:
-                    switch_default_error("Invalid bool expr operation");
-                    return;
+                default: abort();
             }
         }
         case(AST_TYPE_LIST_EXPR): {
@@ -2409,9 +2273,7 @@ void assign_str_id(struct config* config, struct ast_node* node, bool always_ass
             }
             return;
         }
-        default: {
-            switch_default_error("Invalid expr type");
-        }
+        default: abort();
     }
 }
 
@@ -2425,9 +2287,7 @@ static bool eq_compare_value(struct compare_value a, struct compare_value b)
             return a.integer_value == b.integer_value;
         case AST_COMPARE_VALUE_FLOAT:
             return feq(a.float_value, b.float_value);
-        default:
-            switch_default_error("Invalid compare value type");
-            return false;
+        default: abort();
     }
 }
 
@@ -2447,9 +2307,7 @@ static bool eq_equality_value(struct equality_value a, struct equality_value b)
         case AST_EQUALITY_VALUE_INTEGER_ENUM:
             return a.integer_enum_value.var == b.integer_enum_value.var
                 && a.integer_enum_value.ienum == b.integer_enum_value.ienum;
-        default:
-            switch_default_error("Invalid equality value type");
-            return false;
+        default: abort();
     }
 }
 
@@ -2468,9 +2326,7 @@ static bool eq_bool_expr(struct ast_bool_expr a, struct ast_bool_expr b)
             return a.variable.var == b.variable.var;
         case AST_BOOL_LITERAL:
             return a.literal == b.literal;
-        default:
-            switch_default_error("Invalid bool expr op");
-            return false;
+        default: abort();
     }
 }
 
@@ -2487,9 +2343,7 @@ static bool eq_set_left_value(struct set_left_value a, struct set_left_value b)
                 && a.string_value.str == b.string_value.str;
         case AST_SET_LEFT_VALUE_VARIABLE:
             return a.variable_value.var == b.variable_value.var;
-        default:
-            switch_default_error("Invalid left value type");
-            return false;
+        default: abort();
     }
 }
 
@@ -2546,9 +2400,7 @@ static bool eq_set_right_value(struct set_right_value a, struct set_right_value 
             return a.variable_value.var == b.variable_value.var;
         case AST_SET_RIGHT_VALUE_INTEGER_LIST_ENUM:
             return eq_integer_enum_list(a.integer_enum_list_value, b.integer_enum_list_value);
-        default:
-            switch_default_error("Invalid right value type");
-            return false;
+        default: abort();
     }
 }
 
@@ -2571,9 +2423,7 @@ static bool eq_list_value(struct list_value a, struct list_value b)
             return eq_integer_list(a.integer_list_value, b.integer_list_value);
         case AST_LIST_VALUE_STRING_LIST:
             return eq_string_list(a.string_list_value, b.string_list_value);
-        default:
-            switch_default_error("Invalid list value type");
-            return false;
+        default: abort();
     }
 }
 
@@ -2609,9 +2459,7 @@ static bool eq_special_expr(struct ast_special_expr a, struct ast_special_expr b
         case AST_SPECIAL_STRING:
             return a.string.attr_var.var == b.string.attr_var.var && a.string.op == b.string.op
                 && strcmp(a.string.pattern, b.string.pattern) == 0;
-        default:
-            switch_default_error("Invalid special expr type");
-            return false;
+        default: abort();
     }
 }
 
@@ -2648,9 +2496,7 @@ bool eq_expr(const struct ast_node* a, const struct ast_node* b)
         case AST_TYPE_SPECIAL_EXPR: {
             return eq_special_expr(a->special_expr, b->special_expr);
         }
-        default:
-            switch_default_error("Invalid node type");
-            return false;
+        default: abort();
     }
 }
 
@@ -2698,9 +2544,7 @@ void sort_lists(struct ast_node* node)
                 case AST_BOOL_VARIABLE:
                 case AST_BOOL_LITERAL:
                     return;
-                default:
-                    switch_default_error("Invalid bool expr op");
-                    return;
+                default: abort();
             }
         case AST_TYPE_SET_EXPR:
             if(node->set_expr.left_value.value_type == AST_SET_LEFT_VALUE_VARIABLE) {
@@ -2746,9 +2590,7 @@ void sort_lists(struct ast_node* node)
                         sizeof(*node->list_expr.value.string_list_value->strings),
                         scmpfunc);
                     return;
-                default:
-                    switch_default_error("Invalid list value type");
-                    return;
+                default: abort();
             }
         case AST_TYPE_SPECIAL_EXPR:
             switch(node->special_expr.type) {
@@ -2757,13 +2599,9 @@ void sort_lists(struct ast_node* node)
                 case AST_SPECIAL_GEO:
                 case AST_SPECIAL_STRING:
                     return;
-                default:
-                    switch_default_error("Invalid special expr type");
-                    return;
+                default: abort();
             }
-        default:
-            switch_default_error("Invalid node type");
-            return;
+        default: abort();
     }
 }
 
@@ -2827,9 +2665,7 @@ bool all_variables_in_config(const struct config* config, const struct ast_node*
                         && is_variable_valid(node->special_expr.segment.now);
                 default: abort();
             }
-        default:
-            switch_default_error("Invalid node type");
-            return false;
+        default: abort();
     }
 }
 
@@ -2841,9 +2677,7 @@ static size_t get_attr_string_bound(const struct config* config, const char* att
             if(count == SIZE_MAX) {
                 return count;
             }
-            else {
-                return count + 1;
-            }
+            return count + 1;
         }
     }
     return SIZE_MAX;
@@ -2940,9 +2774,7 @@ bool all_bounded_strings_valid(const struct config* config, const struct ast_nod
                 case AST_BOOL_VARIABLE:
                 case AST_BOOL_LITERAL:
                     return true;
-                default:
-                    switch_default_error("Invalid bool expr op");
-                    return false;
+                default: abort();
             }
         case AST_TYPE_SET_EXPR:
             if(node->set_expr.left_value.value_type == AST_SET_LEFT_VALUE_VARIABLE
@@ -2966,9 +2798,7 @@ bool all_bounded_strings_valid(const struct config* config, const struct ast_nod
             return true;
         case AST_TYPE_SPECIAL_EXPR:
             return true;
-        default:
-            switch_default_error("Invalid node type");
-            return false;
+        default: abort();
     }
 }
 

@@ -8,8 +8,6 @@
 #include "tree.h"
 #include "utils.h"
 
-#define SEP_SPACE "                                                      "
-
 static bool should_print_cnode(const struct cnode* cnode)
 {
     return cnode->pdir != NULL || cnode->lnode->sub_count > 0;
@@ -59,22 +57,16 @@ static const char* get_path_cdir(const struct config* config, const struct cdir*
                 parent_path = get_path_cdir(config, cdir->cdir_parent, false);
                 break;
             }
-            else {
-                return get_path_cdir(config, cdir->cdir_parent, false);
-            }
+            return get_path_cdir(config, cdir->cdir_parent, false);
         }
         case(CNODE_PARENT_PNODE): {
             if(first) {
                 parent_path = get_path_pnode(config, cdir->pnode_parent);
                 break;
             }
-            else {
-                return get_path_pnode(config, cdir->pnode_parent);
-            }
+            return get_path_pnode(config, cdir->pnode_parent);
         }
-        default: {
-            switch_default_error("Invalid cdir parent type");
-        }
+        default: abort();
     }
     char* name;
     switch(cdir->bound.value_type) {
@@ -120,9 +112,7 @@ static const char* get_path_cdir(const struct config* config, const struct cdir*
             fprintf(stderr, "%s a frequency value cdir should never happen for now", __func__);
             abort();
         }
-        default: {
-            switch_default_error("Invalid bound value type");
-        }
+        default: abort();
     }
     bfree((char*)parent_path);
     return name;
@@ -163,15 +153,13 @@ static const char* get_name_cnode(const struct config* config, const struct cnod
     if(cnode->parent == NULL) {
         return bstrdup("cnode_root");
     }
-    else {
-        char* name;
-        const char* path = get_path_cnode(config, cnode);
-        if(basprintf(&name, "cnode_%s", path) < 0) {
-            abort();
-        }
-        bfree((char*)path);
-        return name;
+    char* name;
+    const char* path = get_path_cnode(config, cnode);
+    if(basprintf(&name, "cnode_%s", path) < 0) {
+        abort();
     }
+    bfree((char*)path);
+    return name;
 }
 
 static const char* get_name_lnode(const struct config* config, const struct lnode* lnode)
@@ -198,7 +186,7 @@ static const char* get_name_pdir(const struct config* config, const struct pdir*
 
 static void print_spaces(FILE* f, uint64_t level)
 {
-    fprintf(f, "%.*s", (int)level * 4, SEP_SPACE);
+    fprintf(f, "%*s", (int)level * 4, "");
 }
 
 static void write_dot_file_lnode_names(
@@ -308,9 +296,7 @@ static void write_dot_file_cdir_td(FILE* f,
                         stderr, "%s a frequency value cdir should never happen for now", __func__);
                     abort();
                 }
-                default: {
-                    switch_default_error("Invalid bound value type");
-                }
+                default: abort();
             }
             bfree((char*)name);
         }
@@ -781,7 +767,7 @@ void write_dot_file(const struct betree* tree)
 {
     const struct config* config = tree->config;
     const struct cnode* root = tree->cnode;
-    FILE* f = fopen("data/betree.dot", "w");
+    FILE* f = fopen("data/betree.dot", "we");
     if(f == NULL) {
         fprintf(stderr, "Can't open a file to write the dot_file");
         abort();
